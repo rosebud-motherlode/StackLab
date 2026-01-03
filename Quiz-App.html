@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Study Trainer</title>
+
+  <style>
+    :root{
+      --bg0:#0b0a22;
+      --bg1:#14124a;
+      --text:#eef0ff;
+      --muted:#b8baf0;
+      --accent:#7c5cff;
+      --accent2:#46f0c6;
+      --danger:#ff5c8a;
+      --shadow: 0 18px 35px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(124,92,255,.35), transparent 55%),
+        radial-gradient(700px 500px at 80% 40%, rgba(70,240,198,.22), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+    .app{ max-width:430px; margin:0 auto; padding:18px 16px 26px; }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 12px; padding: 6px 4px;
+    }
+    .iconbtn{
+      width:44px;height:44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      display:grid;place-items:center;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .iconbtn:active{ transform: translateY(1px); }
+
+    .tabs{
+      flex:1;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      padding: 0 10px;
+    }
+    .tab{
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-weight: 750;
+      font-size: 13px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active{
+      background: linear-gradient(90deg, rgba(70,240,198,.30), rgba(124,92,255,.30));
+      color: var(--text);
+      border-color: rgba(255,255,255,.18);
+    }
+
+    .brand{
+      font-weight: 900;
+      letter-spacing: .2px;
+      font-size: 28px;
+      line-height: 1.05;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      background-clip:text;
+      color: transparent;
+    }
+    .subtitle{ margin-top: 6px; color: var(--muted); font-size: 14px; line-height: 1.35; }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn{
+      width:100%;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-weight: 800;
+      font-size: 16px;
+      color: #0b0a22;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      margin-top: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.secondary{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn.good{ background: linear-gradient(90deg, rgba(70,240,198,.95), rgba(70,240,198,.65)); }
+    .btn.bad{ background: linear-gradient(90deg, rgba(255,92,138,.95), rgba(124,92,255,.55)); color:#0b0a22; }
+
+    .row{ display:flex; gap:10px; }
+    .row > *{ flex:1; }
+
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size: 13px; font-weight: 750;
+    }
+
+    .deckGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .deckTile{
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 12px 24px rgba(0,0,0,.22);
+      min-height: 94px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .deckTile:active{ transform: translateY(1px); }
+    .deckName{ font-weight:900; letter-spacing:.2px; }
+    .deckMeta{ color: var(--muted); font-size: 13px; margin-top:4px; }
+
+    .badge{
+      width: 44px; height: 44px;
+      border-radius: 16px;
+      display:grid; place-items:center;
+      font-weight:900;
+      color:#0b0a22;
+      align-self:flex-end;
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+    }
+
+    .qBox{
+      margin-top: 12px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .qText{ font-size: 16px; line-height: 1.35; font-weight: 850; margin: 0; }
+    .aText{ margin-top: 10px; color: var(--muted); line-height: 1.35; white-space: pre-wrap; }
+
+    textarea{
+      width:100%; min-height: 150px; resize: vertical;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      outline: none;
+    }
+
+    .small{ color: var(--muted); font-size: 13px; line-height: 1.35; }
+
+    .progressList{ margin-top: 10px; display:flex; flex-direction:column; gap:10px; }
+    .progressItem{
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+    }
+    .progressTop{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+    .progressName{ font-weight:900; }
+    .progressPct{ font-weight:900; color: var(--accent2); }
+    .progressMeta{ margin-top:6px; color: var(--muted); font-size: 13px; line-height:1.35; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- Top Tabs -->
+    <div class="topbar">
+      <button class="iconbtn" id="backBtn" onclick="back()" aria-label="Back" style="visibility:hidden;">←</button>
+
+      <div class="tabs">
+        <div class="tab active" id="tabDecks" onclick="go('screenDecks')">Decks</div>
+        <div class="tab" id="tabProgress" onclick="go('screenProgress')">Progress</div>
+      </div>
+
+      <button class="iconbtn" id="plusBtn" onclick="go('screenImport')" aria-label="Add">＋</button>
+    </div>
+
+    <!-- DECKS -->
+    <div id="screenDecks" class="screen active">
+      <div class="card">
+        <div class="brand">Study Trainer</div>
+        <div class="subtitle">Create decks (Terminal, Git, APIs), bulk paste cards, then browse flashcards or test yourself in Reveal mode.</div>
+
+        <div id="deckGrid" class="deckGrid"></div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="btn secondary" onclick="createDeck()">New Deck</button>
+          <button class="btn secondary" onclick="exportAll()">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT -->
+    <div id="screenImport" class="screen">
+      <div class="card">
+        <div style="font-weight:900;font-size:18px;">Bulk Add</div>
+        <div class="small" style="margin-top:6px;">
+          Paste in this format (blank line between cards):<br><br>
+          <b>Question?</b><br>
+          Answer<br><br>
+          <b>Question 2?</b><br>
+          Answer 2
+        </div>
+
+        <div style="margin-top:12px;">
+          <label class="small" for="importDeck">Deck</label>
+          <select id="importDeck" style="margin-top:6px;width:100%;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);color:var(--text);">
+          </select>
+        </div>
+
+        <textarea id="bulkInput" placeholder="Paste your Q&A blocks here..."></textarea>
+
+        <div class="row">
+          <button class="btn" onclick="addBulk()">Save</button>
+          <button class="btn secondary" onclick="clearBulk()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE PICKER -->
+    <div id="screenMode" class="screen">
+      <div class="card">
+        <div class="pill" id="modeDeckPill">Deck</div>
+        <div style="margin-top:10px;font-weight:900;font-size:18px;">Choose a mode</div>
+        <div class="small" style="margin-top:6px;">
+          Flashcards are for browsing/learning. Reveal Test is for active recall + progress tracking.
+        </div>
+
+        <button class="btn secondary" onclick="startFlashcards()">Flashcards</button>
+        <button class="btn" onclick="startRevealTest()">Test (Reveal + Track)</button>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div id="screenFlash" class="screen">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="pill" id="flashPill">Flashcards</div>
+          <div class="pill" id="flashCountPill">0/0</div>
+        </div>
+
+        <div class="qBox">
+          <p class="qText" id="flashQ">—</p>
+          <div class="aText" id="flashA" style="display:none;"></div>
+        </div>
+
+        <button class="btn secondary" onclick="toggleFlashAnswer()">Reveal / Hide Answer</button>
+
+        <div class="row">
+          <button class="btn secondary" onclick="flashPrev()">Previous</button>
+          <button class="btn secondary" onclick="flashNext()">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVEAL TEST -->
+    <div id="screenTest" class="screen">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <div class="pill" id="testDeckPill">Reveal Test</div>
+          <div class="pill" id="testCountPill">0/0</div>
+        </div>
+
+        <div class="qBox">
+          <p class="qText" id="testQ">—</p>
+          <div class="aText" id="testA" style="display:none;"></div>
+        </div>
+
+        <button class="btn secondary" id="revealBtn" onclick="revealTestAnswer()">Reveal Answer</button>
+
+        <div id="scoreBtns" style="display:none;">
+          <div class="row">
+            <button class="btn good" onclick="markAnswer(true)">Got it</button>
+            <button class="btn bad" onclick="markAnswer(false)">Missed</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn secondary" onclick="testPrev()">Previous</button>
+          <button class="btn secondary" onclick="testNext()">Next</button>
+        </div>
+
+        <button class="btn secondary" style="margin-top:10px;" onclick="finishTest()">Finish & Save Session</button>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div id="screenProgress" class="screen">
+      <div class="card">
+        <div style="font-weight:900;font-size:18px;">Progress</div>
+        <div class="small" style="margin-top:6px;">
+          Progress is tracked only in “Test (Reveal + Track)”. Flashcards are for learning without scoring.
+        </div>
+
+        <div id="progressList" class="progressList"></div>
+
+        <button class="btn secondary" onclick="resetProgress()">Reset Progress</button>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ---------------------------
+  // Storage
+  // ---------------------------
+  const STORE_KEY = "study_trainer_v2";
+
+  function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+  function $(id){ return document.getElementById(id); }
+
+  function loadStore(){
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      try { return JSON.parse(raw); } catch(e){}
+    }
+    const seed = {
+      decks: [
+        { id: uid(), name: "Terminal Commands", colorA:"#46f0c6", colorB:"#7c5cff",
+          cards: [
+            { q:"What does `pwd` do?", a:"Prints the current working directory." },
+            { q:"What does `ls -la` do?", a:"Lists files including hidden ones, with details (long format)." },
+            { q:"How do you stop a running command?", a:"Press Ctrl + C." },
+            { q:"What does `grep -i` do?", a:"Searches text ignoring case (case-insensitive)." }
+          ]
+        }
+      ],
+      lastDeckId: null,
+      progress: {
+        // deckId -> { attempted, correct, sessions, lastSessionISO }
+      }
+    };
+    saveStore(seed);
+    return seed;
+  }
+
+  function saveStore(s){ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+
+  let store = loadStore();
+  let activeDeckId = store.lastDeckId || (store.decks[0]?.id ?? null);
+
+  // ---------------------------
+  // Navigation + Tabs
+  // ---------------------------
+  let screenStack = ["screenDecks"];
+
+  function setTabs(active){
+    $("tabDecks").classList.toggle("active", active === "screenDecks");
+    $("tabProgress").classList.toggle("active", active === "screenProgress");
+  }
+
+  function setTopControls(){
+    const current = screenStack[screenStack.length-1];
+    // back button visible on sub-screens
+    $("backBtn").style.visibility =
+      (current === "screenDecks" || current === "screenProgress") ? "hidden" : "visible";
+
+    // plus button only makes sense on decks/import context
+    $("plusBtn").style.visibility =
+      (current === "screenDecks" || current === "screenImport") ? "visible" : "hidden";
+
+    setTabs(current === "screenProgress" ? "screenProgress" : "screenDecks");
+  }
+
+  function show(screenId, push=true){
+    for(const el of document.querySelectorAll(".screen")) el.classList.remove("active");
+    $(screenId).classList.add("active");
+
+    if(push){
+      const cur = screenStack[screenStack.length-1];
+      if(cur !== screenId) screenStack.push(screenId);
+    }
+
+    if(screenId === "screenDecks") renderDecks();
+    if(screenId === "screenImport") renderImport();
+    if(screenId === "screenProgress") renderProgress();
+    setTopControls();
+  }
+
+  function go(screenId){
+    // Tabs are “root” screens, so reset stack
+    if(screenId === "screenDecks" || screenId === "screenProgress"){
+      screenStack = [screenId];
+      show(screenId, false);
+      return;
+    }
+    show(screenId, true);
+  }
+
+  function back(){
+    if(screenStack.length <= 1) return;
+    screenStack.pop();
+    const prev = screenStack[screenStack.length-1];
+    show(prev, false);
+  }
+
+  // ---------------------------
+  // Helpers
+  // ---------------------------
+  function getDeck(id){ return store.decks.find(d => d.id === id) || null; }
+
+  function setActiveDeck(id){
+    activeDeckId = id;
+    store.lastDeckId = id;
+    saveStore(store);
+  }
+
+  function randomColor(){
+    const colors = ["#46f0c6","#7c5cff","#ff5c8a","#ffd166","#4dd0ff","#a78bfa","#34d399"];
+    return colors[Math.floor(Math.random()*colors.length)];
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function ensureProgress(deckId){
+    if(!store.progress) store.progress = {};
+    if(!store.progress[deckId]){
+      store.progress[deckId] = { attempted:0, correct:0, sessions:0, lastSessionISO:null };
+    }
+    return store.progress[deckId];
+  }
+
+  // ---------------------------
+  // Decks
+  // ---------------------------
+  function renderDecks(){
+    const grid = $("deckGrid");
+    grid.innerHTML = "";
+
+    store.decks.forEach((d, idx) => {
+      const tile = document.createElement("div");
+      tile.className = "deckTile";
+      tile.onclick = () => openDeck(d.id);
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.style.background = `linear-gradient(135deg, ${d.colorA}, ${d.colorB})`;
+      badge.textContent = String(idx+1).padStart(2,"0");
+
+      const name = document.createElement("div");
+      name.className = "deckName";
+      name.textContent = d.name;
+
+      const prog = ensureProgress(d.id);
+      const pct = prog.attempted > 0 ? Math.round((prog.correct/prog.attempted)*100) : 0;
+
+      const meta = document.createElement("div");
+      meta.className = "deckMeta";
+      meta.textContent = `${d.cards.length} cards • ${pct}% accuracy`;
+
+      const top = document.createElement("div");
+      top.appendChild(name);
+      top.appendChild(meta);
+
+      tile.appendChild(top);
+      tile.appendChild(badge);
+      grid.appendChild(tile);
+    });
+
+    saveStore(store);
+  }
+
+  function createDeck(){
+    const name = prompt("Deck name? (e.g. Git Commands)");
+    if(!name) return;
+    const d = { id: uid(), name: name.trim(), colorA: randomColor(), colorB: randomColor(), cards: [] };
+    store.decks.unshift(d);
+    saveStore(store);
+    renderDecks();
+  }
+
+  function openDeck(deckId){
+    const deck = getDeck(deckId);
+    if(!deck) return;
+
+    setActiveDeck(deckId);
+
+    if(deck.cards.length < 1){
+      alert("This deck is empty. Tap ＋ to bulk add questions first.");
+      go("screenImport");
+      return;
+    }
+
+    $("modeDeckPill").textContent = deck.name;
+    go("screenMode");
+  }
+
+  // ---------------------------
+  // Import
+  // ---------------------------
+  function renderImport(){
+    const sel = $("importDeck");
+    sel.innerHTML = "";
+    store.decks.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d.id;
+      opt.textContent = d.name;
+      if(d.id === activeDeckId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function clearBulk(){ $("bulkInput").value = ""; }
+
+  function addBulk(){
+    const deckId = $("importDeck").value;
+    const deck = getDeck(deckId);
+    if(!deck) return alert("Deck not found.");
+
+    const text = $("bulkInput").value.trim();
+    if(!text) return alert("Paste some questions first.");
+
+    const blocks = text.split(/\n\s*\n/);
+    let added = 0;
+
+    for(const block of blocks){
+      const lines = block.split("\n").map(s => s.trim()).filter(Boolean);
+      if(lines.length >= 2){
+        deck.cards.push({ q: lines[0], a: lines.slice(1).join("\n") });
+        added++;
+      }
+    }
+
+    saveStore(store);
+    $("bulkInput").value = "";
+    alert(`Saved ${added} card(s) to "${deck.name}".`);
+    setActiveDeck(deckId);
+    go("screenDecks");
+  }
+
+  // ---------------------------
+  // Flashcards
+  // ---------------------------
+  let flash = { order: [], index: 0, deckId: null };
+
+  function startFlashcards(){
+    const deck = getDeck(activeDeckId);
+    if(!deck) return;
+
+    flash.deckId = deck.id;
+    flash.order = deck.cards.map((_, i)=>i);
+    flash.index = 0;
+
+    $("flashPill").textContent = `${deck.name} • Flashcards`;
+    renderFlash();
+    go("screenFlash");
+  }
+
+  function renderFlash(){
+    const deck = getDeck(flash.deckId);
+    const total = flash.order.length;
+    const n = flash.index + 1;
+
+    $("flashCountPill").textContent = `${n}/${total}`;
+
+    const card = deck.cards[flash.order[flash.index]];
+    $("flashQ").textContent = card.q;
+    $("flashA").textContent = card.a;
+    $("flashA").style.display = "none";
+  }
+
+  function toggleFlashAnswer(){
+    const el = $("flashA");
+    el.style.display = (el.style.display === "none") ? "block" : "none";
+  }
+
+  function flashNext(){
+    if(flash.index < flash.order.length-1){ flash.index++; renderFlash(); }
+  }
+  function flashPrev(){
+    if(flash.index > 0){ flash.index--; renderFlash(); }
+  }
+
+  // ---------------------------
+  // Reveal Test (tracked)
+  // ---------------------------
+  let test = {
+    deckId: null,
+    order: [],
+    index: 0,
+    sessionAttempted: 0,
+    sessionCorrect: 0,
+    marked: new Map(), // index -> true/false
+  };
+
+  function startRevealTest(){
+    const deck = getDeck(activeDeckId);
+    if(!deck) return;
+
+    test.deckId = deck.id;
+    test.order = shuffle(deck.cards.map((_,i)=>i));
+    test.index = 0;
+    test.sessionAttempted = 0;
+    test.sessionCorrect = 0;
+    test.marked = new Map();
+
+    $("testDeckPill").textContent = `${deck.name} • Reveal Test`;
+    renderTest();
+    go("screenTest");
+  }
+
+  function renderTest(){
+    const deck = getDeck(test.deckId);
+    const total = test.order.length;
+    const n = test.index + 1;
+
+    $("testCountPill").textContent = `${n}/${total}`;
+
+    const card = deck.cards[test.order[test.index]];
+    $("testQ").textContent = card.q;
+    $("testA").textContent = card.a;
+    $("testA").style.display = "none";
+
+    $("scoreBtns").style.display = "none";
+    $("revealBtn").style.display = "block";
+  }
+
+  function revealTestAnswer(){
+    $("testA").style.display = "block";
+    $("scoreBtns").style.display = "block";
+    $("revealBtn").style.display = "none";
+  }
+
+  function markAnswer(gotIt){
+    // only allow marking once per question in this session
+    if(test.marked.has(test.index)) return;
+
+    test.marked.set(test.index, gotIt);
+    test.sessionAttempted++;
+    if(gotIt) test.sessionCorrect++;
+
+    // auto-advance for speed
+    setTimeout(() => testNext(), 250);
+  }
+
+  function testNext(){
+    if(test.index < test.order.length-1){
+      test.index++;
+      renderTest();
+    } else {
+      // stay on last card; user can finish
+      renderTest();
+    }
+  }
+
+  function testPrev(){
+    if(test.index > 0){
+      test.index--;
+      renderTest();
+    }
+  }
+
+  function finishTest(){
+    const prog = ensureProgress(test.deckId);
+
+    // merge session into lifetime progress
+    prog.attempted += test.sessionAttempted;
+    prog.correct += test.sessionCorrect;
+    prog.sessions += 1;
+    prog.lastSessionISO = new Date().toISOString();
+
+    saveStore(store);
+
+    const pct = prog.attempted > 0 ? Math.round((prog.correct/prog.attempted)*100) : 0;
+    alert(`Session saved.\nThis session: ${test.sessionCorrect}/${test.sessionAttempted}\nOverall accuracy: ${pct}%`);
+    go("screenProgress");
+  }
+
+  // ---------------------------
+  // Progress
+  // ---------------------------
+  function renderProgress(){
+    const list = $("progressList");
+    list.innerHTML = "";
+
+    if(store.decks.length === 0){
+      list.innerHTML = `<div class="small">No decks yet.</div>`;
+      return;
+    }
+
+    store.decks.forEach(d => {
+      const prog = ensureProgress(d.id);
+      const pct = prog.attempted > 0 ? Math.round((prog.correct/prog.attempted)*100) : 0;
+      const last = prog.lastSessionISO ? new Date(prog.lastSessionISO).toLocaleString() : "—";
+
+      const item = document.createElement("div");
+      item.className = "progressItem";
+
+      const top = document.createElement("div");
+      top.className = "progressTop";
+
+      const name = document.createElement("div");
+      name.className = "progressName";
+      name.textContent = d.name;
+
+      const pctEl = document.createElement("div");
+      pctEl.className = "progressPct";
+      pctEl.textContent = `${pct}%`;
+
+      top.appendChild(name);
+      top.appendChild(pctEl);
+
+      const meta = document.createElement("div");
+      meta.className = "progressMeta";
+      meta.innerHTML =
+        `Attempted: <b>${prog.attempted}</b> • Correct: <b>${prog.correct}</b> • Sessions: <b>${prog.sessions}</b><br>` +
+        `Last session: ${last}`;
+
+      item.appendChild(top);
+      item.appendChild(meta);
+
+      // quick actions
+      const actions = document.createElement("div");
+      actions.className = "row";
+      actions.style.marginTop = "10px";
+
+      const flashBtn = document.createElement("button");
+      flashBtn.className = "btn secondary";
+      flashBtn.textContent = "Flashcards";
+      flashBtn.onclick = () => { setActiveDeck(d.id); startFlashcards(); };
+
+      const testBtn = document.createElement("button");
+      testBtn.className = "btn";
+      testBtn.textContent = "Test";
+      testBtn.onclick = () => { setActiveDeck(d.id); startRevealTest(); };
+
+      actions.appendChild(flashBtn);
+      actions.appendChild(testBtn);
+
+      item.appendChild(actions);
+      list.appendChild(item);
+    });
+
+    saveStore(store);
+  }
+
+  function resetProgress(){
+    if(!confirm("Reset all progress stats? (This won’t delete your cards.)")) return;
+    store.progress = {};
+    saveStore(store);
+    renderProgress();
+  }
+
+  // ---------------------------
+  // Export
+  // ---------------------------
+  function exportAll(){
+    const data = JSON.stringify(store, null, 2);
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "study-trainer-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert("Backup downloaded (on iPhone it will prompt where to save).");
+  }
+
+  // Boot
+  renderDecks();
+  setTopControls();
+</script>
+
+</body>
+</html>
